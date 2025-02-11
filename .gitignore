@@ -18,7 +18,4 @@ npm-debug.log*
 
 # OS
 .DS_Store
-Thumbs.db 
-
-# Config
-config/config.json
+Thumbs.db
