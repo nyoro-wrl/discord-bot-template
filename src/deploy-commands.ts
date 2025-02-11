@@ -50,9 +50,9 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
           case ApplicationCommandType.ChatInput:
             return `/${cmd.name}`;
           case ApplicationCommandType.User:
-            return `user/${cmd.name}`;
+            return `user.${cmd.name}`;
           case ApplicationCommandType.Message:
-            return `message/${cmd.name}`;
+            return `message.${cmd.name}`;
           default:
             return cmd.name;
         }
