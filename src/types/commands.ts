@@ -5,10 +5,11 @@ import {
   MessageContextMenuCommandInteraction,
   UserContextMenuCommandInteraction,
   ApplicationCommandType,
+  SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
 
 export interface ChatCommand {
-  data: SlashCommandBuilder;
+  data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 }
 
