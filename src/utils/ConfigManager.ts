@@ -1,3 +1,4 @@
+import { CommandInteraction } from "discord.js";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
@@ -28,14 +29,31 @@ export class ConfigManager {
     return new GlobalConfig(ConfigManager.instance);
   }
 
-  public static getGuild(guildId: string): GuildConfig {
+  public static getGuild(interaction: CommandInteraction): GuildConfig {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager();
+    }
+    if (!interaction.guildId) {
+      throw new Error("Guild ID is required for guild scope");
+    }
+    return new GuildConfig(ConfigManager.instance, interaction.guildId);
+  }
+
+  public static getGuildFromId(guildId: string): GuildConfig {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
     }
     return new GuildConfig(ConfigManager.instance, guildId);
   }
 
-  public static getUser(userId: string): UserConfig {
+  public static getUser(interaction: CommandInteraction): UserConfig {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager();
+    }
+    return new UserConfig(ConfigManager.instance, interaction.user.id);
+  }
+
+  public static getUserFromId(userId: string): UserConfig {
     if (!ConfigManager.instance) {
       ConfigManager.instance = new ConfigManager();
     }

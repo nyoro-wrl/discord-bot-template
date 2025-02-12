@@ -7,9 +7,9 @@ const command: ChatCommand = {
   async execute(interaction) {
     const globalConfig = ConfigManager.getGlobal();
     const guildConfig = interaction.guildId
-      ? ConfigManager.getGuild(interaction.guildId)
+      ? ConfigManager.getGuildFromId(interaction.guildId)
       : undefined;
-    const userConfig = ConfigManager.getUser(interaction.user.id);
+    const userConfig = ConfigManager.getUser(interaction);
 
     const globalCount = globalConfig.get<number>("count", 0) + 1;
     const guildCount = (guildConfig?.get<number>("count", 0) ?? 0) + 1;
