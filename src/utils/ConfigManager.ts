@@ -161,7 +161,7 @@ class GlobalConfig {
   }
 }
 
-class GuildConfig {
+export class GuildConfig {
   constructor(private manager: ConfigManager, private guildId: string) {}
 
   public get<T>(key: string, defaultValue?: T): T {
