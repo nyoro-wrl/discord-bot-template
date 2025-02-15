@@ -2,7 +2,6 @@ import { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 
 import { MessageCommand } from "../../types/commands";
 
 const command: MessageCommand = {
-  type: ApplicationCommandType.Message,
   data: new ContextMenuCommandBuilder().setName("Copy").setType(ApplicationCommandType.Message),
 
   async execute(interaction) {

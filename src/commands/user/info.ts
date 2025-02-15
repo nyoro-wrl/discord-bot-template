@@ -2,7 +2,6 @@ import { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } from 
 import { UserCommand } from "../../types/commands";
 
 const command: UserCommand = {
-  type: ApplicationCommandType.User,
   data: new ContextMenuCommandBuilder().setName("Info").setType(ApplicationCommandType.User),
 
   async execute(interaction) {

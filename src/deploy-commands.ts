@@ -43,16 +43,15 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
     console.log(`現在の環境: ${process.env.NODE_ENV}`);
     console.log(`登録予定のコマンド数: ${commands.length}`);
 
-    // コマンド名の一覧を表示（タイプ付き）
     commands.forEach((cmd) => {
       const displayName = (() => {
         switch (cmd.type) {
           case ApplicationCommandType.ChatInput:
             return `/${cmd.name}`;
           case ApplicationCommandType.User:
-            return `user.${cmd.name}`;
+            return `User.${cmd.name}`;
           case ApplicationCommandType.Message:
-            return `message.${cmd.name}`;
+            return `Message.${cmd.name}`;
           default:
             return cmd.name;
         }
@@ -61,18 +60,23 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
     });
 
     if (process.env.NODE_ENV === "development") {
-      // 開発環境の場合、まずグローバルコマンドを削除
       console.log("開発環境: グローバルコマンドを削除中...");
       await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), { body: [] });
       console.log("グローバルコマンドを削除しました");
 
-      // ギルドコマンドとして登録
       const data = await rest.put(
         Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
         { body: commands }
       );
       console.log(`${(data as any[]).length} 個のコマンドをギルドコマンドとして登録しました！`);
     } else {
+      console.log("本番環境: ギルドコマンドを削除中...");
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
+        { body: [] }
+      );
+      console.log("ギルドコマンドを削除しました");
+
       const data = await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
         body: commands,
       });

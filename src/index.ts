@@ -1,8 +1,9 @@
-import { Client, Collection, GatewayIntentBits, Interaction } from "discord.js";
+import { Client, Collection, GatewayIntentBits, Interaction, MessageFlags } from "discord.js";
 import { config } from "dotenv";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { ChatCommand, MessageCommand, UserCommand } from "./types/commands";
+import express from "express";
 
 type Command = ChatCommand | MessageCommand | UserCommand;
 
@@ -48,6 +49,7 @@ class Bot extends Client {
 
       this.setupProcessHandlers();
       this.setupEventHandlers();
+      this.setupHttpServer();
 
       await this.login(process.env.DISCORD_TOKEN);
     } catch (error) {
@@ -84,6 +86,28 @@ class Bot extends Client {
   }
 
   private async handleInteraction(interaction: Interaction) {
+    if (interaction.isModalSubmit()) {
+      console.log("モーダル送信を受信:", interaction.customId);
+      const commandName = interaction.customId.split(":")[0];
+      console.log("検索するコマンド名:", commandName);
+      const command = this.commands.get(commandName);
+      console.log("見つかったコマンド:", command?.data.name);
+      if (command?.handleModal) {
+        try {
+          await command.handleModal(interaction);
+        } catch (error) {
+          console.error(error);
+          if (interaction.isRepliable()) {
+            await interaction.reply({
+              content: "モーダルの処理中にエラーが発生しました。",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        }
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
 
     const command = this.commands.get(interaction.commandName);
@@ -104,10 +128,23 @@ class Bot extends Client {
       if (interaction.isRepliable()) {
         await interaction.reply({
           content: "コマンドの実行中にエラーが発生しました。",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
+  }
+
+  private setupHttpServer() {
+    const app = express();
+    const port = process.env.PORT || 3000;
+
+    app.get("/ping", (req, res) => {
+      res.send("pong");
+    });
+
+    app.listen(port, () => {
+      console.log(`HTTPサーバーが${port}番ポートで起動しました`);
+    });
   }
 }
 
