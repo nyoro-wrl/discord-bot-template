@@ -2,6 +2,10 @@
 TypeScriptを使用した、簡易的なDiscord Botのテンプレート。
 
 ## セットアップ
+1. [Discord Developer Portal](https://discord.com/developers/applications)でBotを作成
+2. .env.exampleをコピーして.envを作成し、そこに各情報を入れる
+3. Botを実装
+
 ```bash
 # パッケージのインストール
 npm install
