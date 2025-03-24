@@ -15,7 +15,7 @@
     "express": "^4.21.2"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.1",
     "@types/node": "^22.13.1",
     "cross-env": "^7.0.3",
     "discord.js": "^14.17.3",

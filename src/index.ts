@@ -9,6 +9,9 @@ type Command = ChatCommand | MessageCommand | UserCommand;
 
 config();
 
+// 環境に応じたプレフィックスを選択
+const ENV_PREFIX = process.env.NODE_ENV === "production" ? "PROD_" : "DEV_";
+
 class Bot extends Client {
   public commands: Collection<string, Command> = new Collection();
 
@@ -51,7 +54,8 @@ class Bot extends Client {
       this.setupEventHandlers();
       this.setupHttpServer();
 
-      await this.login(process.env.DISCORD_TOKEN);
+      // 環境に応じたトークンを使用
+      await this.login(process.env[`${ENV_PREFIX}BOT_TOKEN`]);
     } catch (error) {
       console.error("ボットの起動中にエラーが発生しました:", error);
       process.exit(1);
@@ -138,8 +142,30 @@ class Bot extends Client {
     const app = express();
     const port = process.env.PORT || 3000;
 
-    app.get("/ping", (req, res) => {
-      res.send("pong");
+    app.get("/healthz", (req, res) => {
+      const uptime = process.uptime();
+
+      // Discordクライアントの接続状態を確認
+      const isDiscordConnected = this.isReady();
+
+      const status = {
+        status: isDiscordConnected ? "ok" : "degraded",
+        discord_connected: isDiscordConnected,
+        uptime: `${Math.floor(uptime / 3600)}時間${Math.floor((uptime % 3600) / 60)}分${Math.floor(
+          uptime % 60
+        )}秒`,
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log(`ヘルスチェックリクエスト受信: ${JSON.stringify(status)}`);
+
+      // Discordに接続していない場合は503を返す
+      // ただし、起動直後の場合は猶予を与える（例：起動後30秒以内）
+      if (!isDiscordConnected && uptime > 30) {
+        res.status(503).json(status);
+      } else {
+        res.json(status);
+      }
     });
 
     app.listen(port, () => {

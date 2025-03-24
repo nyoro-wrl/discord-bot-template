@@ -10,6 +10,13 @@ import { join } from "path";
 
 config();
 
+// 環境に応じたプレフィックスを選択
+const ENV_PREFIX = process.env.NODE_ENV === "production" ? "PROD_" : "DEV_";
+const BOT_TOKEN = process.env[`${ENV_PREFIX}BOT_TOKEN`];
+const APPLICATION_ID = process.env[`${ENV_PREFIX}APPLICATION_ID`];
+// 開発環境でのみGUILD_IDを使用
+const GUILD_ID = process.env.NODE_ENV === "development" ? process.env.DEV_GUILD_ID : undefined;
+
 const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
 const processedCommands = new Set<string>();
 const commandsPath = join(__dirname, "commands");
@@ -34,7 +41,7 @@ const loadCommandsFromDir = async (dirPath: string) => {
   }
 };
 
-const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
+const rest = new REST().setToken(BOT_TOKEN!);
 
 (async () => {
   try {
@@ -43,6 +50,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
     console.log(`現在の環境: ${process.env.NODE_ENV}`);
     console.log(`登録予定のコマンド数: ${commands.length}`);
 
+    // コマンド名の一覧を表示（タイプ付き）
     commands.forEach((cmd) => {
       const displayName = (() => {
         switch (cmd.type) {
@@ -60,24 +68,16 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
     });
 
     if (process.env.NODE_ENV === "development") {
-      console.log("開発環境: グローバルコマンドを削除中...");
-      await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), { body: [] });
-      console.log("グローバルコマンドを削除しました");
-
-      const data = await rest.put(
-        Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
-        { body: commands }
-      );
+      // 開発環境の場合、ギルドコマンドとして登録
+      console.log("開発環境: ギルドコマンドを登録中...");
+      const data = await rest.put(Routes.applicationGuildCommands(APPLICATION_ID!, GUILD_ID!), {
+        body: commands,
+      });
       console.log(`${(data as any[]).length} 個のコマンドをギルドコマンドとして登録しました！`);
     } else {
-      console.log("本番環境: ギルドコマンドを削除中...");
-      await rest.put(
-        Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!),
-        { body: [] }
-      );
-      console.log("ギルドコマンドを削除しました");
-
-      const data = await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      // 本番環境の場合、グローバルコマンドとして登録
+      console.log("本番環境: グローバルコマンドを登録中...");
+      const data = await rest.put(Routes.applicationCommands(APPLICATION_ID!), {
         body: commands,
       });
       console.log(`${(data as any[]).length} 個のコマンドをグローバルコマンドとして登録しました！`);
