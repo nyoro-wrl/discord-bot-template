@@ -22,4 +22,43 @@ npm start
 ```
 
 ## コマンドの作成
-スラッシュコマンドはsrc/commands/chatに、ユーザーコンテキストメニューはsrc/commands/userに、メッセージコンテキストメニューはsrc/commands/messageにそれぞれ作成する。
+スラッシュコマンドはsrc/commands/chatに、メッセージコンテキストメニューはsrc/commands/messageに、ユーザーコンテキストメニューはsrc/commands/userにそれぞれ作成する。  
+コマンドはsrc/types/commands.tsのinterfaceを実装して作成すること。スラッシュコマンドならChatCommand、メッセージコンテキストならMessageCommand、ユーザーコンテキストならUserContext。
+
+## 値の保存
+設定値の保存には`ConfigManager`クラスを使用します。グローバル、ギルド、ユーザーの3つのスコープで値を保存できます。
+
+### グローバルスコープ
+Bot全体で共有される設定値を保存します。
+
+```typescript
+const config = ConfigManager.getGlobal();
+config.set("key", "value");
+const value = config.get("key");
+```
+
+### ギルドスコープ
+サーバー（ギルド）ごとの設定値を保存します。
+
+```typescript
+const config = ConfigManager.getGuild(interaction);
+// または
+const config = ConfigManager.getGuildFromId("ギルドID");
+
+config.set("key", "value");
+const value = config.get("key");
+```
+
+### ユーザースコープ
+ユーザーごとの設定値を保存します。
+
+```typescript
+const config = ConfigManager.getUser(interaction);
+// または
+const config = ConfigManager.getUserFromId("ユーザーID");
+
+config.set("key", "value");
+const value = config.get("key");
+```
+
+設定値は`config/config.json`に保存され、Bot再起動後も維持されます。
